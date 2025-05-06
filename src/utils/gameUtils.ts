@@ -6,7 +6,8 @@ import {
   EntityPosition, 
   EnemyType,
   Star,
-  ProjectileSource
+  ProjectileSource,
+  GameState
 } from '../types/game';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -205,4 +206,44 @@ export function createStars(count: number, width: number, height: number): Star[
   }
   
   return stars;
+}
+
+/**
+ * Save game state to local storage
+ * @param gameState Current game state
+ */
+export function saveGameState(gameState: GameState): void {
+  try {
+    localStorage.setItem('cosmic-invaders-game-state', JSON.stringify(gameState));
+  } catch (error) {
+    console.error('Failed to save game state to localStorage:', error);
+  }
+}
+
+/**
+ * Load game state from local storage
+ * @returns Loaded game state or undefined if not found
+ */
+export function loadGameState(): GameState | undefined {
+  try {
+    const savedState = localStorage.getItem('cosmic-invaders-game-state');
+    if (savedState) {
+      return JSON.parse(savedState);
+    }
+    return undefined;
+  } catch (error) {
+    console.error('Failed to load game state from localStorage:', error);
+    return undefined;
+  }
+}
+
+/**
+ * Clear saved game state from localStorage
+ */
+export function clearGameState(): void {
+  try {
+    localStorage.removeItem('cosmic-invaders-game-state');
+  } catch (error) {
+    console.error('Failed to clear game state from localStorage:', error);
+  }
 }

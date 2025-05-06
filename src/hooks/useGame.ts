@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { GameState, Player, Enemy, Projectile, Shield } from '../types/game';
 import { 
@@ -10,34 +9,52 @@ import {
   createEnemyProjectile,
   isPlayerHit,
   processShieldHit,
-  checkEnemyHits
+  checkEnemyHits,
+  loadGameState,
+  saveGameState
 } from '../utils/gameUtils';
 import { v4 as uuidv4 } from 'uuid';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export function useGame(canvasWidth: number, canvasHeight: number) {
   const { toast } = useToast();
-  const [gameState, setGameState] = useState<GameState>({
-    status: 'ready',
-    score: 0,
-    highScore: parseInt(localStorage.getItem('spaceInvadersHighScore') || '0'),
-    level: 1,
-    player: {
-      id: 'player',
-      x: canvasWidth / 2 - 20,
-      y: canvasHeight - 60,
-      width: 40,
-      height: 30,
-      lives: 3,
-      speed: 300,
-      cooldown: 300,
-      lastShot: 0
-    },
-    enemies: [],
-    projectiles: [],
-    shields: [],
-    ufo: null,
-    lastUfoSpawn: 0
+  
+  // Initialize game state with saved state or defaults
+  const [gameState, setGameState] = useState<GameState>(() => {
+    const savedState = loadGameState();
+    if (savedState && savedState.status !== 'gameOver') {
+      return {
+        ...savedState,
+        player: {
+          ...savedState.player,
+          x: canvasWidth / 2 - 20 // Reposition player based on current canvas
+        },
+        highScore: parseInt(localStorage.getItem('spaceInvadersHighScore') || '0')
+      };
+    }
+    
+    return {
+      status: 'ready',
+      score: 0,
+      highScore: parseInt(localStorage.getItem('spaceInvadersHighScore') || '0'),
+      level: 1,
+      player: {
+        id: 'player',
+        x: canvasWidth / 2 - 20,
+        y: canvasHeight - 60,
+        width: 40,
+        height: 30,
+        lives: 3,
+        speed: 300,
+        cooldown: 300,
+        lastShot: 0
+      },
+      enemies: [],
+      projectiles: [],
+      shields: [],
+      ufo: null,
+      lastUfoSpawn: 0
+    };
   });
 
   const requestRef = useRef<number>();
@@ -45,6 +62,22 @@ export function useGame(canvasWidth: number, canvasHeight: number) {
   const keysPressed = useRef<Record<string, boolean>>({});
   const touchStartX = useRef<number | null>(null);
   const gameAreaRef = useRef<HTMLDivElement | null>(null);
+  const lastUpdateTimeRef = useRef<number>(0);
+  
+  // Save game state to localStorage on changes
+  useEffect(() => {
+    // Throttle saving to avoid performance issues
+    const now = Date.now();
+    if (now - lastUpdateTimeRef.current > 2000 && gameState.status === 'playing') {
+      saveGameState(gameState);
+      lastUpdateTimeRef.current = now;
+    }
+    
+    // Always save on pause and game over
+    if (gameState.status === 'paused' || gameState.status === 'gameOver') {
+      saveGameState(gameState);
+    }
+  }, [gameState]);
 
   // Initialize game
   const initGame = useCallback(() => {

@@ -97,10 +97,22 @@
   }
 
   body {
-    @apply bg-space-background text-space-white;
+    @apply bg-space-background text-space-white dark:bg-space-background light:bg-white light:text-gray-800;
     margin: 0;
     padding: 0;
     overflow: hidden;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
   
   @keyframes stars-animation {
@@ -162,5 +174,19 @@
   
   .heavily-damaged {
     background-color: rgba(50, 200, 50, 0.1);
+  }
+
+  .light .star {
+    background: #333;
+  }
+  
+  .light .laser {
+    background-color: #0066ff;
+    box-shadow: 0 0 5px #0066ff, 0 0 10px #0066ff;
+  }
+  
+  .light .enemy-laser {
+    background-color: #cc0033;
+    box-shadow: 0 0 5px #cc0033, 0 0 10px #cc0033;
   }
 }
