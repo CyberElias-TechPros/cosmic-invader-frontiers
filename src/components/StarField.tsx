@@ -7,8 +7,17 @@ interface StarFieldProps {
   height: number;
 }
 
+interface Star {
+  id: number;
+  x: number;
+  y: number;
+  size: 'small' | 'medium' | 'large';
+  duration: number;
+  delay: number;
+}
+
 const StarField = ({ width, height }: StarFieldProps) => {
-  const [stars, setStars] = useState<any[]>([]);
+  const [stars, setStars] = useState<Star[]>([]);
 
   useEffect(() => {
     setStars(createStars(100, width, height));

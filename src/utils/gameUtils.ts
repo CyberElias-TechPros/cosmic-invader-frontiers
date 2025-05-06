@@ -1,8 +1,21 @@
-
-import { Entity, Enemy, Projectile, Shield, EntityPosition } from '../types/game';
+import { 
+  Entity, 
+  Enemy, 
+  Projectile, 
+  Shield, 
+  EntityPosition, 
+  EnemyType,
+  Star,
+  ProjectileSource
+} from '../types/game';
 import { v4 as uuidv4 } from 'uuid';
 
-// Collision detection between two entities
+/**
+ * Checks collision between two entities
+ * @param entity1 First entity
+ * @param entity2 Second entity
+ * @returns Boolean indicating if collision occurred
+ */
 export function checkCollision(entity1: Entity, entity2: Entity): boolean {
   return (
     entity1.x < entity2.x + entity2.width &&
@@ -84,7 +97,11 @@ export function createShields(gameWidth: number, gameHeight: number): Shield[] {
   return shields;
 }
 
-// Create a UFO enemy
+/**
+ * Create a UFO enemy that moves across the screen
+ * @param gameWidth Width of game area
+ * @returns Enemy object representing the UFO
+ */
 export function createUfo(gameWidth: number): Enemy {
   return {
     id: uuidv4(),
@@ -125,7 +142,12 @@ export function createEnemyProjectile(enemyX: number, enemyY: number, enemyWidth
   };
 }
 
-// Check if player is hit by a projectile
+/**
+ * Check if player is hit by an enemy projectile
+ * @param player Player entity
+ * @param projectiles Array of projectiles
+ * @returns Boolean indicating if player is hit
+ */
 export function isPlayerHit(player: Entity, projectiles: Projectile[]): boolean {
   return projectiles.some(projectile => 
     projectile.source === 'enemy' && checkCollision(player, projectile)
@@ -162,9 +184,15 @@ export function checkEnemyHits(projectile: Projectile, enemies: Enemy[]): { hit:
   return { hit: false };
 }
 
-// Create starfield effect
-export function createStars(count: number, width: number, height: number) {
-  const stars = [];
+/**
+ * Creates a starfield effect for the background
+ * @param count Number of stars to create
+ * @param width Width of game area
+ * @param height Height of game area
+ * @returns Array of stars for rendering
+ */
+export function createStars(count: number, width: number, height: number): Star[] {
+  const stars: Star[] = [];
   
   for (let i = 0; i < count; i++) {
     const size = Math.random() < 0.3 ? 'large' : Math.random() < 0.6 ? 'medium' : 'small';
