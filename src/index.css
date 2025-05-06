@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -96,6 +97,70 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-space-background text-space-white;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  
+  @keyframes stars-animation {
+    from {
+      transform: translateY(0px);
+    }
+    to {
+      transform: translateY(1000px);
+    }
+  }
+  
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.5;
+  }
+  
+  .star.small {
+    width: 1px;
+    height: 1px;
+  }
+  
+  .star.large {
+    width: 3px;
+    height: 3px;
+    opacity: 0.7;
+  }
+  
+  .laser {
+    position: absolute;
+    width: 2px;
+    background-color: #00ffff;
+    box-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
+  }
+  
+  .enemy-laser {
+    background-color: #ff0055;
+    box-shadow: 0 0 5px #ff0055, 0 0 10px #ff0055;
+  }
+  
+  .explosion {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,99,71,1) 50%, rgba(255,0,0,0) 100%);
+  }
+  
+  .shield {
+    position: absolute;
+    background-color: rgba(50, 200, 50, 0.6);
+    border-radius: 4px;
+  }
+  
+  .damaged {
+    background-color: rgba(50, 200, 50, 0.3);
+  }
+  
+  .heavily-damaged {
+    background-color: rgba(50, 200, 50, 0.1);
   }
 }

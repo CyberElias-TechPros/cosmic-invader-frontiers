@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -52,6 +53,17 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				space: {
+					background: '#0A0B15',
+					primary: '#9b87f5',
+					secondary: '#7E69AB',
+					accent: '#D946EF',
+					danger: '#EA384C',
+					success: '#00D084',
+					warning: '#F97316',
+					info: '#0EA5E9',
+					white: '#FFFFFF',
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -70,25 +82,60 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
+				},
+				'pulse-glow': {
+					'0%, 100%': { 
+						opacity: '1',
+						filter: 'brightness(1) drop-shadow(0 0 5px #9b87f5)'
 					},
-					to: {
-						height: '0'
+					'50%': { 
+						opacity: '0.8',
+						filter: 'brightness(1.2) drop-shadow(0 0 10px #9b87f5)'
+					}
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				'enemy-move': {
+					'0%, 100%': { transform: 'translateX(0)' },
+					'25%': { transform: 'translateX(10px)' },
+					'75%': { transform: 'translateX(-10px)' }
+				},
+				'shake': {
+					'0%, 100%': { transform: 'translateX(0)' },
+					'25%': { transform: 'translateX(-5px)' },
+					'75%': { transform: 'translateX(5px)' }
+				},
+				'explosion': {
+					'0%': { 
+						opacity: '1',
+						transform: 'scale(0.5)'
+					},
+					'50%': { 
+						opacity: '0.8',
+						transform: 'scale(1.2)'
+					},
+					'100%': { 
+						opacity: '0',
+						transform: 'scale(1.5)'
 					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-glow': 'pulse-glow 2s infinite ease-in-out',
+				'float': 'float 3s infinite ease-in-out',
+				'enemy-move': 'enemy-move 2s infinite ease-in-out',
+				'shake': 'shake 0.3s ease-in-out',
+				'explosion': 'explosion 0.5s ease-out forwards'
 			}
 		}
 	},
