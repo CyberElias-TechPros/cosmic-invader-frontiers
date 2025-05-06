@@ -97,10 +97,14 @@
   }
 
   body {
-    @apply bg-space-background text-space-white dark:bg-space-background light:bg-white light:text-gray-800;
+    @apply bg-space-background text-space-white dark:bg-space-background;
     margin: 0;
     padding: 0;
     overflow: hidden;
+  }
+  
+  .light body {
+    @apply bg-white text-gray-800;
   }
 
   .sr-only {

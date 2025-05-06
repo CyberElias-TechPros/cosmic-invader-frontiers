@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState, useCallback, memo } from 'react';
 import { useGame } from '@/hooks/useGame';
 import { Button } from '@/components/ui/button';
@@ -176,7 +175,10 @@ const GameScreen = () => {
     if (gameState.status === 'paused') {
       announceToScreenReader("Game paused");
     } else if (gameState.status === 'gameOver') {
-      const isNewHighScore = updateHighScore(gameState.score);
+      // Fix for line 180 - don't test void expression for truthiness
+      const isNewHighScore = gameState.score > gameState.highScore;
+      updateHighScore(gameState.score);
+      
       if (isNewHighScore) {
         announceToScreenReader(`Game over. New high score: ${gameState.score}`);
       } else {
@@ -185,7 +187,7 @@ const GameScreen = () => {
     } else if (gameState.status === 'playing' && gameState.player.lives < 3) {
       announceToScreenReader(`Lives remaining: ${gameState.player.lives}`);
     }
-  }, [gameState.status, gameState.score, gameState.player.lives, announceToScreenReader, updateHighScore]);
+  }, [gameState.status, gameState.score, gameState.highScore, gameState.player.lives, announceToScreenReader, updateHighScore]);
 
   return (
     <div 
