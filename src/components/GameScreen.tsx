@@ -5,16 +5,16 @@ import { useGameData } from '@/contexts/GameDataContext';
 import GameBoard from './game/GameBoard';
 import GameHUD from './game/GameHUD';
 import GameOverlay from './game/GameOverlay';
+import { Volume2, VolumeX } from 'lucide-react';
 
 // Custom hooks
-import { useGameState } from '@/hooks/useGameState';
+import { useGame } from '@/hooks/useGame';
 import { useGameInput } from '@/hooks/useGameInput';
 import { useGameLoop } from '@/hooks/useGameLoop';
 
 const GameScreen = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const gameAreaRef = useRef<HTMLDivElement>(null);
   const { incrementGamesPlayed } = useGameData();
   const { announceToScreenReader } = useAccessibility();
   
@@ -46,14 +46,15 @@ const GameScreen = () => {
     };
   }, [updateDimensions]);
   
-  // Initialize game state
+  // Initialize game with our enhanced hook
   const { 
     gameState, 
     initGame: baseInitGame, 
     togglePause, 
     playerShoot,
-    updateGameState
-  } = useGameState(dimensions.width, dimensions.height);
+    gameAreaRef,
+    soundControls
+  } = useGame(dimensions.width, dimensions.height);
 
   // Custom game initialization to track game count
   const handleGameStart = useCallback(() => {
@@ -61,6 +62,11 @@ const GameScreen = () => {
     incrementGamesPlayed();
     announceToScreenReader("Game started. Use arrow keys to move and space to shoot.");
   }, [baseInitGame, incrementGamesPlayed, announceToScreenReader]);
+
+  // Game state updater function
+  const updateGameState = useCallback((updater) => {
+    // This is now handled internally in useGameState
+  }, []);
 
   // Set up game input
   const { keysPressed } = useGameInput(
@@ -90,19 +96,20 @@ const GameScreen = () => {
         handleGameStart();
       } else if (e.code === 'Enter' && gameState.status === 'gameOver') {
         handleGameStart();
+      } else if (e.code === 'KeyM') {
+        soundControls.toggleMute();
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState.status, handleGameStart]);
+  }, [gameState.status, handleGameStart, soundControls]);
 
   // Announce game status changes to screen readers
   useEffect(() => {
     if (gameState.status === 'paused') {
       announceToScreenReader("Game paused");
     } else if (gameState.status === 'gameOver') {
-      // Fix for line 180 - don't test void expression for truthiness
       const isNewHighScore = gameState.score > gameState.highScore;
       
       if (isNewHighScore) {
@@ -128,6 +135,19 @@ const GameScreen = () => {
       
       {/* Game HUD */}
       <GameHUD gameState={gameState} />
+      
+      {/* Sound control button */}
+      <button
+        onClick={() => soundControls.toggleMute()}
+        className="absolute top-4 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-space-background bg-opacity-70 hover:bg-opacity-100 transition-all"
+        aria-label={soundControls.isMuted ? "Unmute game sounds" : "Mute game sounds"}
+      >
+        {soundControls.isMuted ? (
+          <VolumeX className="text-white" size={20} />
+        ) : (
+          <Volume2 className="text-white" size={20} />
+        )}
+      </button>
       
       {/* Game Overlays (Start, Pause, GameOver screens) */}
       <GameOverlay 

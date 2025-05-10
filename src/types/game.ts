@@ -1,3 +1,4 @@
+
 export type EntityPosition = {
   x: number;
   y: number;
@@ -63,4 +64,9 @@ export type GameState = {
   shields: Shield[];
   ufo: Enemy | null;
   lastUfoSpawn: number;
+};
+
+export type GameSettings = {
+  soundEnabled: boolean;
+  difficulty: 'easy' | 'normal' | 'hard';
 };

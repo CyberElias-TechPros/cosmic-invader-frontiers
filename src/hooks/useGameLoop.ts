@@ -1,6 +1,7 @@
 
 import { useRef, useCallback, useEffect } from 'react';
 import { GameState } from '@/types/game';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   checkCollision, 
   isPlayerHit, 
@@ -23,6 +24,7 @@ export function useGameLoop(
   const requestRef = useRef<number>();
   const previousTimeRef = useRef<number>();
   const lastUpdateTimeRef = useRef<number>(0);
+  const isMobile = useIsMobile();
 
   // Game loop (animation frame)
   const gameLoop = useCallback((time: number) => {
@@ -50,17 +52,20 @@ export function useGameLoop(
     updateGameState(prevState => {
       let { player, enemies, projectiles, shields, ufo, lastUfoSpawn, score } = prevState;
       
+      // Apply mobile speed adjustment factor
+      const mobileFactor = isMobile ? 0.6 : 1;
+      
       // Handle keyboard movement
       if (keysPressed.current && (keysPressed.current['ArrowLeft'] || keysPressed.current['a'])) {
         player = {
           ...player,
-          x: Math.max(0, player.x - player.speed * delta)
+          x: Math.max(0, player.x - player.speed * delta * mobileFactor)
         };
       }
       if (keysPressed.current && (keysPressed.current['ArrowRight'] || keysPressed.current['d'])) {
         player = {
           ...player,
-          x: Math.min(canvasWidth - player.width, player.x + player.speed * delta)
+          x: Math.min(canvasWidth - player.width, player.x + player.speed * delta * mobileFactor)
         };
       }
       
@@ -74,8 +79,8 @@ export function useGameLoop(
       }).map(projectile => ({
         ...projectile,
         y: projectile.source === 'player' 
-          ? projectile.y - projectile.speed * delta
-          : projectile.y + projectile.speed * delta
+          ? projectile.y - projectile.speed * delta * mobileFactor
+          : projectile.y + projectile.speed * delta * mobileFactor
       }));
       
       // Check for player hit by enemy projectiles
@@ -133,18 +138,23 @@ export function useGameLoop(
         }
       }
       
+      // Mobile: Reduce vertical movement speed
+      const verticalStepSize = isMobile ? 5 : 10;
+      
       enemies = enemies.map(enemy => {
-        const updatedX = enemy.x + directionX * enemy.speed * delta;
-        const updatedY = needsVerticalMove ? enemy.y + 10 : enemy.y;
+        const updatedX = enemy.x + directionX * enemy.speed * delta * mobileFactor;
+        const updatedY = needsVerticalMove ? enemy.y + verticalStepSize : enemy.y;
         
-        // Enemy shooting logic
+        // Enemy shooting logic - reduce shooting frequency on mobile
         let lastShot = enemy.lastShot;
         if (enemy.type === 'shooter') {
           const now = Date.now();
+          const shootProbability = isMobile ? 0.005 : 0.01;
+          
           if (lastShot !== undefined && 
               enemy.cooldown !== undefined && 
               now - lastShot > enemy.cooldown &&
-              Math.random() < 0.01) {
+              Math.random() < shootProbability) {
             
             // Create new enemy projectile
             projectiles.push(createEnemyProjectile(enemy.x, enemy.y, enemy.width));
@@ -197,16 +207,20 @@ export function useGameLoop(
       
       // Handle UFO
       const currentTime = Date.now();
-      if (!ufo && currentTime - lastUfoSpawn > 15000 + Math.random() * 15000) {
+      // Adjust UFO spawn time for mobile
+      const ufoBaseTime = isMobile ? 20000 : 15000;
+      const ufoRandomTime = isMobile ? 20000 : 15000;
+      
+      if (!ufo && currentTime - lastUfoSpawn > ufoBaseTime + Math.random() * ufoRandomTime) {
         ufo = createUfo(canvasWidth);
         lastUfoSpawn = currentTime;
       }
       
       if (ufo) {
-        // Move UFO
+        // Move UFO with mobile adjustment
         ufo = {
           ...ufo,
-          x: ufo.x + ufo.speed * delta
+          x: ufo.x + ufo.speed * delta * mobileFactor
         };
         
         // Check if UFO is off screen
@@ -269,7 +283,7 @@ export function useGameLoop(
     });
     
     requestRef.current = requestAnimationFrame(gameLoop);
-  }, [gameState.status, canvasWidth, canvasHeight, updateGameState, keysPressed]);
+  }, [gameState.status, canvasWidth, canvasHeight, updateGameState, keysPressed, isMobile]);
 
   // Start animation loop
   useEffect(() => {
