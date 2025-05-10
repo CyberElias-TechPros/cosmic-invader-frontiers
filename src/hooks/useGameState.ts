@@ -135,11 +135,19 @@ export function useGameState(canvasWidth: number, canvasHeight: number) {
 
   // Player shooting
   const playerShoot = useCallback(() => {
+    let shotFired = false;
+    
     setGameState(prevState => {
+      if (prevState.status !== 'playing') {
+        return prevState;
+      }
+      
       const now = Date.now();
       if (now - prevState.player.lastShot < prevState.player.cooldown) {
         return prevState;
       }
+      
+      shotFired = true;
       
       const newProjectile = {
         id: `player-projectile-${now}`,
@@ -160,6 +168,8 @@ export function useGameState(canvasWidth: number, canvasHeight: number) {
         }
       };
     });
+    
+    return shotFired;
   }, []);
 
   // Update game state

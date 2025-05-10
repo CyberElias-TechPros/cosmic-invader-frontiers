@@ -1,32 +1,60 @@
 
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 import { GameState } from '@/types/game';
 
 interface SoundEffects {
-  shoot: HTMLAudioElement;
-  explosion: HTMLAudioElement;
-  hit: HTMLAudioElement;
-  ufo: HTMLAudioElement;
-  gameOver: HTMLAudioElement;
-  levelUp: HTMLAudioElement;
-  background: HTMLAudioElement;
+  shoot: HTMLAudioElement | null;
+  explosion: HTMLAudioElement | null;
+  hit: HTMLAudioElement | null;
+  ufo: HTMLAudioElement | null;
+  gameOver: HTMLAudioElement | null;
+  levelUp: HTMLAudioElement | null;
+  background: HTMLAudioElement | null;
 }
 
 export function useGameSounds(gameState: GameState, previousGameState: GameState | null) {
-  const sounds = useRef<Partial<SoundEffects>>({});
-  const isMuted = useRef<boolean>(JSON.parse(localStorage.getItem('cosmic-invaders-muted') || 'false'));
+  const sounds = useRef<SoundEffects>({
+    shoot: null,
+    explosion: null,
+    hit: null,
+    ufo: null,
+    gameOver: null,
+    levelUp: null,
+    background: null
+  });
+  const [isMutedState, setIsMutedState] = useState<boolean>(
+    JSON.parse(localStorage.getItem('cosmic-invaders-muted') || 'false')
+  );
   
   // Initialize sound effects
   useEffect(() => {
+    // Check if audio is supported in this browser
+    const audioTest = document.createElement('audio');
+    if (!audioTest || !audioTest.canPlayType) {
+      console.warn('Audio not supported in this browser');
+      return;
+    }
+
+    // Function to safely create audio element
+    const createAudio = (path: string): HTMLAudioElement | null => {
+      try {
+        const audio = new Audio(path);
+        return audio;
+      } catch (error) {
+        console.warn(`Failed to create audio for ${path}:`, error);
+        return null;
+      }
+    };
+    
     // Create audio elements
     sounds.current = {
-      shoot: new Audio('/sounds/shoot.mp3'),
-      explosion: new Audio('/sounds/explosion.mp3'),
-      hit: new Audio('/sounds/hit.mp3'),
-      ufo: new Audio('/sounds/ufo.mp3'),
-      gameOver: new Audio('/sounds/game-over.mp3'),
-      levelUp: new Audio('/sounds/level-up.mp3'),
-      background: new Audio('/sounds/background.mp3')
+      shoot: createAudio('/sounds/shoot.mp3'),
+      explosion: createAudio('/sounds/explosion.mp3'),
+      hit: createAudio('/sounds/hit.mp3'),
+      ufo: createAudio('/sounds/ufo.mp3'),
+      gameOver: createAudio('/sounds/game-over.mp3'),
+      levelUp: createAudio('/sounds/level-up.mp3'),
+      background: createAudio('/sounds/background.mp3')
     };
     
     // Configure looping for background music
@@ -47,6 +75,14 @@ export function useGameSounds(gameState: GameState, previousGameState: GameState
     if (sounds.current.gameOver) sounds.current.gameOver.volume = 0.5;
     if (sounds.current.levelUp) sounds.current.levelUp.volume = 0.5;
     
+    // Set initial mute state
+    const isMuted = JSON.parse(localStorage.getItem('cosmic-invaders-muted') || 'false');
+    Object.values(sounds.current).forEach(sound => {
+      if (sound) {
+        sound.muted = isMuted;
+      }
+    });
+    
     // Clean up audio elements on unmount
     return () => {
       Object.values(sounds.current).forEach(sound => {
@@ -60,38 +96,39 @@ export function useGameSounds(gameState: GameState, previousGameState: GameState
   
   // Toggle mute function
   const toggleMute = useCallback(() => {
-    isMuted.current = !isMuted.current;
-    localStorage.setItem('cosmic-invaders-muted', JSON.stringify(isMuted.current));
+    const newMuteState = !isMutedState;
+    setIsMutedState(newMuteState);
+    localStorage.setItem('cosmic-invaders-muted', JSON.stringify(newMuteState));
     
     Object.values(sounds.current).forEach(sound => {
       if (sound) {
-        sound.muted = isMuted.current;
+        sound.muted = newMuteState;
       }
     });
     
-    return isMuted.current;
-  }, []);
-  
-  // Set initial mute state for all sounds
-  useEffect(() => {
-    Object.values(sounds.current).forEach(sound => {
-      if (sound) {
-        sound.muted = isMuted.current;
-      }
-    });
-  }, []);
+    return newMuteState;
+  }, [isMutedState]);
   
   // Play sound effect function
   const playSound = useCallback((soundName: keyof SoundEffects) => {
     const sound = sounds.current[soundName];
-    if (sound && !isMuted.current) {
-      // For non-looping sounds, reset and play
+    if (!sound || isMutedState) return;
+    
+    try {
       if (soundName !== 'background' && soundName !== 'ufo') {
         sound.currentTime = 0;
       }
-      sound.play().catch(err => console.log('Error playing sound:', err));
+      const playPromise = sound.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          console.warn(`Sound failed to play: ${soundName}`, err);
+        });
+      }
+    } catch (error) {
+      console.warn(`Error playing sound ${soundName}:`, error);
     }
-  }, []);
+  }, [isMutedState]);
   
   // Handle game state changes to trigger sounds
   useEffect(() => {
@@ -108,11 +145,11 @@ export function useGameSounds(gameState: GameState, previousGameState: GameState
       playSound('gameOver');
       if (sounds.current.background) {
         sounds.current.background.pause();
-        sounds.current.background.currentTime = 0;
+        if (sounds.current.background.currentTime) sounds.current.background.currentTime = 0;
       }
       if (sounds.current.ufo) {
         sounds.current.ufo.pause();
-        sounds.current.ufo.currentTime = 0;
+        if (sounds.current.ufo.currentTime) sounds.current.ufo.currentTime = 0;
       }
     }
     
@@ -130,7 +167,7 @@ export function useGameSounds(gameState: GameState, previousGameState: GameState
     if (previousGameState.ufo && !gameState.ufo) {
       if (sounds.current.ufo) {
         sounds.current.ufo.pause();
-        sounds.current.ufo.currentTime = 0;
+        if (sounds.current.ufo.currentTime) sounds.current.ufo.currentTime = 0;
       }
       playSound('explosion');
     }
@@ -169,13 +206,21 @@ export function useGameSounds(gameState: GameState, previousGameState: GameState
     // Game resumed
     if (previousGameState.status === 'paused' && gameState.status === 'playing') {
       if (sounds.current.background) {
-        sounds.current.background.play().catch(err => console.log('Error playing background:', err));
+        try {
+          sounds.current.background.play().catch(() => {});
+        } catch (e) {
+          console.warn("Could not resume background music", e);
+        }
       }
       if (gameState.ufo && sounds.current.ufo) {
-        sounds.current.ufo.play().catch(err => console.log('Error playing ufo:', err));
+        try {
+          sounds.current.ufo.play().catch(() => {});
+        } catch (e) {
+          console.warn("Could not resume UFO sound", e);
+        }
       }
     }
   }, [gameState, previousGameState, playSound]);
   
-  return { playSound, toggleMute, isMuted: isMuted.current };
+  return { playSound, toggleMute, isMuted: isMutedState };
 }

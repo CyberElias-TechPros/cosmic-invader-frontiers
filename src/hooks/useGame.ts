@@ -9,11 +9,14 @@ export function useGame(canvasWidth: number, canvasHeight: number) {
     gameState, 
     initGame, 
     togglePause, 
-    playerShoot 
+    playerShoot,
+    updateGameState,
+    nextLevel,
+    gameOver
   } = useGameState(canvasWidth, canvasHeight);
   
   // Keep track of previous game state for sound effects
-  const [prevGameState, setPrevGameState] = useState(null);
+  const [prevGameState, setPrevGameState] = useState(gameState);
   
   // Update previous game state after current state changes
   useEffect(() => {
@@ -31,7 +34,11 @@ export function useGame(canvasWidth: number, canvasHeight: number) {
   
   // Enhanced player shoot with sound
   const enhancedPlayerShoot = () => {
-    playerShoot();
+    const success = playerShoot();
+    if (success) {
+      playSound('shoot');
+    }
+    return success;
   };
   
   return {
@@ -40,9 +47,13 @@ export function useGame(canvasWidth: number, canvasHeight: number) {
     togglePause,
     playerShoot: enhancedPlayerShoot,
     gameAreaRef,
+    updateGameState,
+    nextLevel,
+    gameOver,
     soundControls: {
       toggleMute,
-      isMuted
+      isMuted,
+      playSound
     }
   };
 }

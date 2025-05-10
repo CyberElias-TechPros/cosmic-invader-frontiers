@@ -53,6 +53,9 @@ const GameScreen = () => {
     togglePause, 
     playerShoot,
     gameAreaRef,
+    updateGameState,
+    nextLevel,
+    gameOver,
     soundControls
   } = useGame(dimensions.width, dimensions.height);
 
@@ -62,11 +65,6 @@ const GameScreen = () => {
     incrementGamesPlayed();
     announceToScreenReader("Game started. Use arrow keys to move and space to shoot.");
   }, [baseInitGame, incrementGamesPlayed, announceToScreenReader]);
-
-  // Game state updater function
-  const updateGameState = useCallback((updater) => {
-    // This is now handled internally in useGameState
-  }, []);
 
   // Set up game input
   const { keysPressed } = useGameInput(
@@ -82,8 +80,8 @@ const GameScreen = () => {
   useGameLoop(
     gameState,
     updateGameState,
-    baseInitGame, // This will be called when the level is completed
-    () => {}, // Already handled in useGameState
+    nextLevel,
+    gameOver,
     dimensions.width,
     dimensions.height,
     keysPressed
