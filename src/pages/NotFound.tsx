@@ -1,45 +1,65 @@
+import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'motion/react';
+import { Compass, Home, Radar } from 'lucide-react';
+import { Panel, PlayNowButton, Seo } from '@/components/common/atoms';
 
-import { useLocation } from "react-router-dom";
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Home } from "lucide-react";
-
-const NotFound = () => {
+export default function NotFound() {
   const location = useLocation();
 
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-space-background">
-      <div className="text-center p-8 bg-black/20 backdrop-blur-sm rounded-lg border border-space-secondary/20">
-        <h1 className="text-6xl font-bold mb-6 text-space-danger">404</h1>
-        <div className="flex items-center justify-center mb-6">
-          <div className="h-2 w-16 bg-space-primary animate-pulse-glow rounded"></div>
-        </div>
-        <p className="text-2xl text-space-white mb-6">
-          Space sector not found
-        </p>
-        <p className="text-space-white/70 mb-8 max-w-md">
-          The cosmic coordinates you're looking for don't exist in this universe.
-          Return to base command to continue your mission.
-        </p>
-        <Button 
-          asChild
-          className="bg-space-primary hover:bg-space-secondary text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
-        >
-          <a href="/">
-            <Home size={20} />
-            Return to Base
-          </a>
-        </Button>
-      </div>
-    </div>
-  );
-};
+    <>
+      <Seo
+        title="Lost in the dark — 404 | Cosmic Invader Frontiers"
+        description="That coordinate does not exist in this sector. Head back to the bridge and pick a route that does."
+        path={location.pathname}
+        noIndex
+      />
 
-export default NotFound;
+      <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-20 text-center sm:px-6">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="relative"
+        >
+          <Radar className="h-16 w-16 text-primary/70" aria-hidden="true" />
+          <span className="absolute inset-0 animate-pulse-glow rounded-full bg-primary/20 blur-2xl" />
+        </motion.div>
+
+        <p className="label-eyebrow mt-6">Navigation failure · 404</p>
+        <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">
+          This coordinate is empty space
+        </h1>
+        <p className="mt-4 max-w-lg text-sm text-muted-foreground sm:text-base">
+          Nothing is parked at <span className="font-mono text-foreground">{location.pathname}</span>. The bridge suggests one of
+          the routes below.
+        </p>
+
+        <Panel className="mt-8 w-full p-6">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              { to: '/', label: 'Bridge', hint: 'Home', icon: <Home className="h-4 w-4" /> },
+              { to: '/leaderboards', label: 'Standings', hint: 'Verified boards', icon: <Compass className="h-4 w-4" /> },
+              { to: '/about', label: 'Manual', hint: 'How it works', icon: <Radar className="h-4 w-4" /> },
+            ].map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="card-hover rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left"
+              >
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-primary/30 bg-primary/10 text-primary">
+                  {link.icon}
+                </span>
+                <p className="mt-3 text-sm font-medium">{link.label}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{link.hint}</p>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-6 flex justify-center">
+            <PlayNowButton size="sm">Fly a sortie instead</PlayNowButton>
+          </div>
+        </Panel>
+      </div>
+    </>
+  );
+}
