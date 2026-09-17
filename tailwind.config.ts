@@ -1,13 +1,12 @@
 
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 export default {
 	darkMode: ["class"],
 	content: [
-		"./pages/**/*.{ts,tsx}",
-		"./components/**/*.{ts,tsx}",
-		"./app/**/*.{ts,tsx}",
-		"./src/**/*.{ts,tsx}",
+		'./index.html',
+		'./src/**/*.{ts,tsx}',
 	],
 	prefix: "",
 	theme: {
@@ -52,17 +51,6 @@ export default {
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
-				},
-				space: {
-					background: '#0A0B15',
-					primary: '#9b87f5',
-					secondary: '#7E69AB',
-					accent: '#D946EF',
-					danger: '#EA384C',
-					success: '#00D084',
-					warning: '#F97316',
-					info: '#0EA5E9',
-					white: '#FFFFFF',
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
@@ -139,5 +127,5 @@ export default {
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [animate],
 } satisfies Config;

@@ -1,0 +1,100 @@
+#:schema node_modules/wrangler/config-schema.json
+# ---------------------------------------------------------------------------
+# Cosmic Invader Frontiers — Cloudflare API
+# ---------------------------------------------------------------------------
+# Everything in this file has a local-first default so `npm run dev:api`
+# works with zero Cloudflare credentials. Production values are documented
+# in docs/DEPLOYMENT.md; only the `id` fields must be filled in there.
+# ---------------------------------------------------------------------------
+
+name = "cosmic-invader-frontiers-api"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+# Observability: sampled logs + trace events, no secrets ever logged.
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[vars]
+ENVIRONMENT = "development"
+API_VERSION = "1"
+# Comma separated list of origins allowed to call the API with credentials.
+ALLOWED_ORIGINS = "http://localhost:8080,http://127.0.0.1:8080,http://localhost:5173,http://127.0.0.1:5173"
+# Public base URL used to build share links.
+PUBLIC_SITE_URL = "http://localhost:8080"
+# Server-side replay verification budget (in simulated ticks).
+MAX_REPLAY_TICKS = "120000"
+# Kill switch for leaderboard score acceptance (set to "false" to freeze boards).
+LEADERBOARD_INGEST_ENABLED = "true"
+
+# --- Relational data -------------------------------------------------------
+[[d1_databases]]
+binding = "DB"
+database_name = "cosmic-invader-frontiers"
+database_id = "local-dev-database"
+migrations_dir = "migrations"
+
+# --- Key/value: hot caches, rate limiting, feature flags --------------------
+[[kv_namespaces]]
+binding = "CACHE"
+id = "local-dev-cache"
+
+# --- Object storage: replays + generated share cards ------------------------
+[[r2_buckets]]
+binding = "REPLAYS"
+bucket_name = "cosmic-invader-replays"
+
+# --- Durable Object: realtime leaderboard fan-out ---------------------------
+[[durable_objects.bindings]]
+name = "LEADERBOARD_HUB"
+class_name = "LeaderboardHub"
+
+[[durable_objects.bindings]]
+name = "PRESENCE_HUB"
+class_name = "PresenceHub"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["LeaderboardHub", "PresenceHub"]
+
+# --- Queues: async post-run processing -------------------------------------
+[[queues.producers]]
+binding = "RUN_QUEUE"
+queue = "cosmic-run-processing"
+
+[[queues.consumers]]
+queue = "cosmic-run-processing"
+max_batch_size = 25
+max_batch_timeout = 5
+max_retries = 3
+dead_letter_queue = "cosmic-run-processing-dlq"
+
+[[queues.producers]]
+binding = "EVENT_QUEUE"
+queue = "cosmic-events"
+
+[[queues.consumers]]
+queue = "cosmic-events"
+max_batch_size = 100
+max_batch_timeout = 10
+max_retries = 3
+
+# --- Cron triggers ----------------------------------------------------------
+[triggers]
+crons = [
+  "0 0 * * *",    # daily: season rollover check, daily challenge materialisation
+  "*/15 * * * *", # quarter-hourly: leaderboard snapshots + cache warm
+  "30 3 * * *",   # nightly: session/telemetry retention + integrity audit
+]
+
+# --- Non-secret defaults for local development ------------------------------
+[dev]
+port = 8787
+ip = "0.0.0.0"
+local_protocol = "http"
+
+# Secrets for local development live in backend/.dev.vars (git-ignored).
+# Production secrets: `wrangler secret put <NAME>` (see docs/DEPLOYMENT.md).

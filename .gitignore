@@ -12,6 +12,25 @@ dist
 dist-ssr
 *.local
 
+# Vite env files (keep the examples)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Cloudflare / Wrangler local state and per-developer secrets
+.wrangler
+.wrangler/
+backend/.wrangler/
+backend/.wrangler-e2e/
+backend/.dev.vars
+.dev.vars
+
+# Test + tooling output
+coverage/
+.vercel
+.wrangler
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
