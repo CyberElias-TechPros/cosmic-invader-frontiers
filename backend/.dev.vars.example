@@ -1,0 +1,14 @@
+# Local development secrets for `wrangler dev`.
+# Copy to backend/.dev.vars (git-ignored) and replace the values.
+#
+#   cp backend/.dev.vars.example backend/.dev.vars
+#
+# Production values are set with:
+#   wrangler secret put SESSION_SECRET --config backend/wrangler.toml
+
+# Signing key for access tokens. MUST be at least 32 characters.
+SESSION_SECRET="dev-only-secret-please-replace-with-64-random-characters"
+
+# One-time token used to promote the first operator to the admin role.
+# Leave empty to disable the bootstrap endpoint entirely.
+ADMIN_BOOTSTRAP_TOKEN="dev-bootstrap-token"
