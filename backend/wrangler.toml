@@ -34,7 +34,7 @@ LEADERBOARD_INGEST_ENABLED = "true"
 [[d1_databases]]
 binding = "DB"
 database_name = "cosmic-invader-frontiers"
-database_id = "local-dev-database"
+database_id = "dee53d02-48f3-48a8-835a-0ecacbf98808"
 migrations_dir = "migrations"
 
 # --- Key/value: hot caches, rate limiting, feature flags --------------------
