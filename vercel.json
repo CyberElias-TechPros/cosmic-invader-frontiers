@@ -11,10 +11,17 @@
       "source": "/api/:path*",
       "destination": "https://cosmic-invader-frontiers-api.cyber-e54.workers.dev/api/:path*"
     },
-    {
-      "source": "/((?!api/|assets/|favicon\\.|og-image|robots\\.txt|sitemap\\.xml|manifest\\.webmanifest).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/play", "destination": "/index.html" },
+    { "source": "/play/:mode", "destination": "/index.html" },
+    { "source": "/leaderboards", "destination": "/index.html" },
+    { "source": "/daily", "destination": "/index.html" },
+    { "source": "/achievements", "destination": "/index.html" },
+    { "source": "/profile", "destination": "/index.html" },
+    { "source": "/settings", "destination": "/index.html" },
+    { "source": "/pilots/:handle", "destination": "/index.html" },
+    { "source": "/runs/:id", "destination": "/index.html" },
+    { "source": "/about", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" }
   ],
   "headers": [
     {
