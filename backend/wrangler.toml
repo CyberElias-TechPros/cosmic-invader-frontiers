@@ -40,7 +40,7 @@ migrations_dir = "migrations"
 # --- Key/value: hot caches, rate limiting, feature flags --------------------
 [[kv_namespaces]]
 binding = "CACHE"
-id = "local-dev-cache"
+id = "cde361568f80460ba2caff8947774662"
 
 # --- Object storage: replays + generated share cards ------------------------
 [[r2_buckets]]
@@ -83,12 +83,15 @@ max_batch_timeout = 10
 max_retries = 3
 
 # --- Cron triggers ----------------------------------------------------------
-[triggers]
-crons = [
-  "0 0 * * *",    # daily: season rollover check, daily challenge materialisation
-  "*/15 * * * *", # quarter-hourly: leaderboard snapshots + cache warm
-  "30 3 * * *",   # nightly: session/telemetry retention + integrity audit
-]
+# DISABLED 2026-10-08: the Cyber account is at the Workers Free limit of 5
+# cron triggers per account. Season rollover, leaderboard snapshots and
+# retention jobs pause until Workers Paid (see wrangler.notriggers.toml).
+# [triggers]
+# crons = [
+#   "0 0 * * *",    # daily: season rollover check, daily challenge materialisation
+#   "*/15 * * * *", # quarter-hourly: leaderboard snapshots + cache warm
+#   "30 3 * * *",   # nightly: session/telemetry retention + integrity audit
+# ]
 
 # --- Non-secret defaults for local development ------------------------------
 [dev]
